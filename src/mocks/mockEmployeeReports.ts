@@ -1,0 +1,42 @@
+export const mockEmployeeReports = [
+  {
+    id: 1,
+    title: "SQL Injection in Login API",
+    program: "Bug Bounty Program",
+    severity: "Critical",
+    status: "Triaged",
+    date: "May 23, 2026",
+  },
+  {
+    id: 2,
+    title: "XSS Vulnerability in Dashboard",
+    program: "Internal Security",
+    severity: "High",
+    status: "New",
+    date: "May 21, 2026",
+  },
+  {
+    id: 3,
+    title: "CSRF Issue in Payments",
+    program: "Payments Platform",
+    severity: "Medium",
+    status: "Resolved",
+    date: "May 20, 2026",
+  },
+  {
+    id: 4,
+    title: "Privilege Escalation Bug",
+    program: "Admin Panel",
+    severity: "Critical",
+    status: "In Review",
+    date: "May 18, 2026",
+  },
+  {
+    id: 5,
+    title: "Broken Authentication Flow",
+    program: "Authentication Service",
+    severity: "High",
+    status: "Triaged",
+    date: "May 17, 2026",
+  },
+];
