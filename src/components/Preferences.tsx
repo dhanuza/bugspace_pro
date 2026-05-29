@@ -67,6 +67,20 @@ export default function Preferences() {
             defaultOn={true}
             onChange={(val) => console.log("In-App Alerts:", val)}
           />
+
+          {/* NEW: Internal Note Toggle */}
+          <Toggle
+            label="Internal Note"
+            defaultOn={false}
+            onChange={(val) =>
+              console.log(
+                "Internal Note:",
+                val
+                  ? "ON (hidden from researcher)"
+                  : "OFF (visible to researcher)"
+              )
+            }
+          />
         </div>
       </div>
     </div>
