@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import Preferences from "../../components/Preferences";
 
 export const Route = createFileRoute("/employee/profile")({
   component: ProfilePage,
@@ -114,6 +115,9 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* USER PREFERENCES */}
+        <Preferences />
       </div>
     </div>
   );
