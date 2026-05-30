@@ -7,17 +7,29 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],
 
+<<<<<<< HEAD
+=======
+    /* Bundler mode */
+>>>>>>> janani/main
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": false,
     "noEmit": true,
 
+<<<<<<< HEAD
+=======
+    /* Linting */
+>>>>>>> janani/main
     "skipLibCheck": true,
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+<<<<<<< HEAD
 
+=======
+    "noUncheckedSideEffectImports": true,
+>>>>>>> janani/main
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]

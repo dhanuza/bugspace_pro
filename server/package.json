@@ -11,7 +11,11 @@
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.19.2",
+<<<<<<< HEAD
     "firebase-admin": "^13.10.0"
+=======
+    "firebase-admin": "^13.9.0"
+>>>>>>> janani/main
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
