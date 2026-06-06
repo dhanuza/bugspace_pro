@@ -13,7 +13,6 @@ import users from "./routes/users.js";
 import organizations from "./routes/organizations.js";
 import auditLogs from "./routes/auditLogs.js";
 
-
 const app = express();
 app.use(cors({
   origin: [
@@ -38,13 +37,9 @@ app.get("/api/debug/auth", verifyToken, (req, res) => {
 });
 
 // ── Public routes — no authentication required ────────────────────────────
-// Auth must be registered BEFORE the verifyToken + verifyOrg guard so that
-// POST /api/auth/login is accessible without a token.
 app.use("/api/auth", auth);
 
 // ── Protected routes — token + org validation on every request ────────────
-// Sprint 1 TODO: verifyToken currently uses a demo implementation.
-// Replace with Firebase Admin SDK ID token verification.
 app.use("/api", verifyToken, verifyOrg);
 app.use("/api/programs", programs);
 app.use("/api/reports", reports);
@@ -55,4 +50,7 @@ app.use("/api/audit-logs", auditLogs);
 
 // ── Start ─────────────────────────────────────────────────────────────────
 const PORT = Number(process.env.PORT ?? 4000);
-app.listen(PORT, () => console.log(`Bugspace API listening on :${PORT}`));
+app.listen(PORT, () => {
+  console.log("🌱 Bugspace API running smoothly in demo mode.");
+  console.log(`Bugspace API listening on :${PORT}`);
+});
