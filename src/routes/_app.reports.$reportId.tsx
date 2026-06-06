@@ -36,9 +36,26 @@ function ReportDetails() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [draft, setDraft] = useState("");
 
+  // 1. New State Element: Track if viewing/posting Public Chat vs. Internal Notes
+  const [chatMode, setChatMode] = useState<"public" | "internal">("public");
+
   useEffect(() => {
+    // Baseline report details loader
     reportRepository.get(reportId).then(setReport).catch(() => setReport(placeholderReport(reportId)));
+  }, [reportId]);
+
+  // 2. Continuous Background Polling Loop: Pull live message updates every 3 seconds
+  useEffect(() => {
+    // Initial fetch
     reportRepository.comments(reportId).then(setComments).catch(() => setComments(placeholderComments));
+
+    const livePollTimer = setInterval(() => {
+      reportRepository.comments(reportId)
+        .then(setComments)
+        .catch((err) => console.log("Polling backup catch:", err));
+    }, 3000);
+
+    return () => clearInterval(livePollTimer); // Cleanup loop timer on component unmount
   }, [reportId]);
 
   const updateStatus = async (status: ReportStatus) => {
@@ -50,6 +67,7 @@ function ReportDetails() {
   const addComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!draft.trim()) return;
+    
     const optimistic: Comment = {
       id: `tmp-${Date.now()}`,
       reportId,
@@ -57,13 +75,30 @@ function ReportDetails() {
       authorName: "You",
       body: draft,
       createdAt: new Date().toISOString(),
+      // Optional flag if your types definition supports it natively, or context markers
+      isInternal: chatMode === "internal" 
     };
+    
     setComments((c) => [...c, optimistic]);
     setDraft("");
-    try { await reportRepository.addComment(reportId, optimistic.body); } catch {}
+    
+    try { 
+      // Sends the text payload directly over your API repository client
+      await reportRepository.addComment(reportId, optimistic.body); 
+    } catch {}
   };
 
   if (!report) return <div className="text-muted-foreground">Loading...</div>;
+
+  // Filter messages dynamically based on selected privacy segment toggle
+  const visibleComments = comments.filter((c: any) => {
+    if (chatMode === "internal") {
+      // Internal tab views internal notes or management status entries
+      return c.isInternal || c.authorId === "u-mgr" || c.authorId === "me";
+    }
+    // Public tab hides internal tags
+    return !c.isInternal;
+  });
 
   return (
     <div className="grid lg:grid-cols-3 gap-6">
@@ -76,21 +111,53 @@ function ReportDetails() {
             <span className="text-xs text-muted-foreground capitalize">Severity: {report.severity}</span>
           </div>
         </div>
+        
         <div className="bg-card border border-border rounded-lg p-5">
           <h2 className="font-medium mb-2">Description</h2>
           <p className="text-sm text-muted-foreground whitespace-pre-wrap">{report.description || "No description available"}</p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-5">
-          <h2 className="font-medium mb-4">Activity</h2>
-          <div className="space-y-4">
-            {comments.map((c) => (
+        
+        {/* Activity Container Header with Dual-Visibility Chat Tabs */}
+        <div className="bg-card border border-border rounded-lg overflow-hidden">
+          <div className="flex border-b border-border bg-muted/30">
+            <button 
+              onClick={() => setChatMode("public")}
+              className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                chatMode === "public" 
+                  ? "bg-card border-b-2 border-primary text-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              💬 Public Collaboration Feed
+            </button>
+            <button 
+              onClick={() => setChatMode("internal")}
+              className={`flex-1 py-3 text-sm font-medium transition-colors ${
+                chatMode === "internal" 
+                  ? "bg-card border-b-2 border-amber-500 text-amber-500" 
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              🔒 Internal Notes Toggle
+            </button>
+          </div>
+
+          <div className="p-5 space-y-4">
+            {visibleComments.map((c) => (
               <div key={c.id} className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-primary/20 text-primary text-xs flex items-center justify-center shrink-0">
+                <div className={`h-8 w-8 rounded-full text-xs flex items-center justify-center shrink-0 ${
+                  (c as any).isInternal ? "bg-amber-500/20 text-amber-500" : "bg-primary/20 text-primary"
+                }`}>
                   {c.authorName.charAt(0)}
                 </div>
                 <div className="flex-1">
                   <div className="text-sm">
                     <span className="font-medium">{c.authorName}</span>
+                    {(c as any).isInternal && (
+                      <span className="ml-2 px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-500 font-semibold uppercase">
+                        Internal Note
+                      </span>
+                    )}
                     <span className="text-muted-foreground ml-2 text-xs">
                       {new Date(c.createdAt).toLocaleString()}
                     </span>
@@ -99,20 +166,33 @@ function ReportDetails() {
                 </div>
               </div>
             ))}
+
+            {visibleComments.length === 0 && (
+              <div className="text-center py-6 text-xs text-muted-foreground">
+                No active updates recorded inside this conversation feed.
+              </div>
+            )}
           </div>
-          <form onSubmit={addComment} className="mt-5 flex flex-col sm:flex-row gap-2">
+
+          {/* Form Box with Dynamic Placeholder Input Box values */}
+          <form onSubmit={addComment} className="p-4 border-t border-border bg-muted/10 flex flex-col sm:flex-row gap-2">
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Write a comment..."
-              className="flex-1 bg-input border border-border rounded-md px-3 py-2 text-sm"
+              placeholder={chatMode === "internal" ? "Write a private internal team note..." : "Reply to researcher..."}
+              className="flex-1 bg-input border border-border rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
             />
-            <button className="px-4 py-2 rounded-md text-sm bg-primary text-primary-foreground hover:opacity-90 shrink-0">
-              Send
+            <button 
+              className={`px-4 py-2 rounded-md text-sm text-white font-medium shrink-0 transition-opacity hover:opacity-90 ${
+                chatMode === "internal" ? "bg-amber-600" : "bg-primary"
+              }`}
+            >
+              {chatMode === "internal" ? "Post Note" : "Send"}
             </button>
           </form>
         </div>
       </div>
+
       <aside className="space-y-4">
         <div className="bg-card border border-border rounded-lg p-5">
           <h3 className="text-sm font-medium mb-3">Status</h3>

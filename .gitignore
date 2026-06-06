@@ -41,3 +41,5 @@ server/.env
 
 #documentation
 documentation.md
+*.json
+.env*
